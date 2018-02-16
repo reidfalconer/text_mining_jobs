@@ -6,6 +6,117 @@ output: html_document
 keep_md: true
 ---
 
+<style>
+body {
+text-align: justify}
+</style>
+
+# Introduction
+
+This article serves as a basic introduction to text mining in R using the `tidytext` package. Specifically it looks as text mining job discriptions on [Careers24](http://www.careers24.com/), one of the leading job portals in South Africa.
+
+Text mining usually involves the process of structuring the input text. The overarching goal is, essentially, to turn text into data for analysis, via application of natural language processing (NLP) and analytical methods.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# load libraries
+library(dplyr)
+library(tidytext)
+library(ggplot2)
+library(tidyr)
+
+# load data
+careers24.data <- readRDS("careers24_jobs_database.RDS")
+
+# Get rid of foreign symbols in job discriptions
+careers24.data$job.description <- sapply(careers24.data$job.description,function(row) iconv(row, "latin1", "ASCII", sub=""))
+
 ```
+
+# The Tidy Text 
+
+The job discriptions on [Careers24](http://www.careers24.com/) are typical character vectors that we might want to analyse. In order to turn it into a tidy text dataset, we first need to put it into a data frame.
+```{r}
+text_df_career24 <- data_frame(line = 1:57837, text = careers24.data$job.description)
+text_df_career24
+```
+
+However, this data frame isn’t yet compatible with tidy text analysis. We can’t filter out words or count which occur most frequently, since each row is made up of multiple combined words. We need to convert this so that it has one-token-per-discription-per-row. To do this, we use tidytext’s `unnest_tokens()` function.
+
+```{r}
+tidy_c24_job_discription <- text_df_career24 %>%
+                            unnest_tokens(word, text, token = "words", to_lower = TRUE)
+tidy_c24_job_discription
+```
+
+Now that the data is in one-word-per-row format, we can manipulate it with tidy tools like `dplyr`. Often in text analysis, we will want to remove stop words; stop words are words that are not useful for an analysis, typically extremely common words such as “the”, “of”, “to”, and so forth in English. We can remove stop words (kept in the tidytext dataset `stop_words`) with an `anti_join()`. 
+
+Furthermore, after close examination of the job discriptions it was found that every discription ended with the same two sentences (by default): "Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful." Therefore, these words were also removed for the job discriptions.
+
+```{r, include=FALSE}
+data(stop_words)
+
+text <- c("Companies may expire jobs at their own discretion.
+          If you have not received a response within two weeks, 
+          your application was most likely unsuccessful xxx xxxx")
+
+text_df <- data_frame(line = 1, text = text)
+
+text_df <- text_df %>%
+  unnest_tokens(word, text, token = "words", to_lower = TRUE)
+```
+```{r}
+tidy_c24_job_discription <- tidy_c24_job_discription %>%
+                            anti_join(stop_words) %>%
+                            filter(!word %in% text_df$word)
+```
+We can now use dplyr’s `count()` to find the most common words in all the job discriptions as a whole.
+```{r}
+tidy_c24_job_discription %>%
+  count(word, sort = TRUE) 
+```
+
+```{r}
+tidy_c24_job_discription %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 25000) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+```
+
+# Sentiment Analysis on Careers24 Job Discriptions
+
+```{r}
+
+c24_job_discription_sentiment <- tidy_c24_job_discription %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(line, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+bing_word_counts <- tidy_c24_job_discription %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+bing_word_counts %>%
+  group_by(sentiment) %>%
+  top_n(8) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(y = "Contribution to sentiment",
+       x = NULL) +
+  coord_flip()
+
+```
+
+
+
+
