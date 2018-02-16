@@ -90,8 +90,9 @@ tidy_c24_job_discription <- tidy_c24_job_discription %>%
 We can now use dplyr’s `count()` to find the most common words in all the job discriptions as a whole.
 
 ```r
-tidy_c24_job_discription %>%
+tidy_c24_count <- tidy_c24_job_discription %>%
   count(word, sort = TRUE) 
+tidy_c24_count
 ```
 
 ```
@@ -112,33 +113,19 @@ tidy_c24_job_discription %>%
 ```
 
 
+
+
 ```r
-tidy_c24_job_discription %>%
-  count(word, sort = TRUE) %>%
-  filter(n > 25000) %>%
-  mutate(word = reorder(word, n)) %>%
-  ggplot(aes(word, n)) +
-  geom_col() +
-  xlab(NULL) +
-  coord_flip()
+#top 10 words
+ggplot(data=tidy_c24_count[1:10,],aes(x=word,y=n,fill=word))+
+  geom_bar(colour="black",stat="identity")+
+  xlab("Common words")+ylab("N count")+ggtitle("Careers24 Top 10 words in Job Discriptions")+
+  guides(fill=FALSE)+theme(plot.title = element_text(hjust = 0.5))
 ```
 
-![](careers24_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+![](careers24_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 # Sentiment Analysis on Careers24 Job Discriptions
-
-
-```r
-c24_job_discription_sentiment <- tidy_c24_job_discription %>%
-  inner_join(get_sentiments("bing")) %>%
-  count(line, sentiment) %>%
-  spread(sentiment, n, fill = 0) %>%
-  mutate(sentiment = positive - negative)
-```
-
-```
-## Joining, by = "word"
-```
 
 ```r
 bing_word_counts <- tidy_c24_job_discription %>%
@@ -169,7 +156,24 @@ bing_word_counts %>%
 ## Selecting by n
 ```
 
-![](careers24_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+![](careers24_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
+```r
+tidy_c24_job_discription %>%
+  count(word) %>%
+  inner_join(get_sentiments("loughran"), by = "word") %>%
+  group_by(sentiment) %>%
+  top_n(5, n) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(~ sentiment, scales = "free") +
+  ylab("Frequency of this word in Careers24 job discriptions")
+```
+
+![](careers24_files/figure-html/unnamed-chunk-8-2.png)<!-- -->
 
 
 
