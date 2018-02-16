@@ -1,0 +1,11 @@
+---
+title: "Careers24 Text Mining and NLP"
+author: "Reid Falconer"
+date: "2/16/2018"
+output: html_document
+keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
