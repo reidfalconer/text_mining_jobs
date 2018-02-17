@@ -131,12 +131,12 @@ text-align: justify}
 </style>
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>This article serves as a basic introduction to text mining in R using the <code>tidytext</code> package. Specifically it looks as text mining job discriptions on <a href="http://www.careers24.com/">Careers24</a>, one of the leading job portals in South Africa.</p>
+<p>This article serves as a basic introduction to text mining in R using the <code>tidytext</code> package. Specifically it looks as text mining job descriptions on <a href="http://www.careers24.com/">Careers24</a>, one of the leading job portals in South Africa.</p>
 <p>Text mining usually involves the process of structuring the input text. The overarching goal is, essentially, to turn text into data for analysis, via application of natural language processing (NLP) and analytical methods.</p>
 </div>
 <div id="the-tidy-text" class="section level1">
 <h1>The Tidy Text</h1>
-<p>The job discriptions on <a href="http://www.careers24.com/">Careers24</a> are typical character vectors that we might want to analyse. In order to turn it into a tidy text dataset, we first need to put it into a data frame.</p>
+<p>The job descriptions on <a href="http://www.careers24.com/">Careers24</a> are typical character vectors that we might want to analyse. In order to turn it into a tidy text dataset, we first need to put it into a data frame.</p>
 <pre class="r"><code>text_df_career24 &lt;- data_frame(line = 1:57837, text = careers24.data$job.description)
 text_df_career24</code></pre>
 <pre><code>## # A tibble: 57,837 x 2
@@ -153,7 +153,7 @@ text_df_career24</code></pre>
 ##  9     9 Tired of waitressing?Tired of not making enough money and workin~
 ## 10    10 five star hotel is seeking a Reservations agentRoom Reservations~
 ## # ... with 57,827 more rows</code></pre>
-<p>However, this data frame isn’t yet compatible with tidy text analysis. We can’t filter out words or count which occur most frequently, since each row is made up of multiple combined words. We need to convert this so that it has one-token-per-discription-per-row. To do this, we use tidytext’s <code>unnest_tokens()</code> function.</p>
+<p>However, this data frame isn’t yet compatible with tidy text analysis. We can’t filter out words or count which occur most frequently, since each row is made up of multiple combined words. We need to convert this so that it has one-token-per-description-per-row. To do this, we use tidytext’s <code>unnest_tokens()</code> function.</p>
 <pre class="r"><code>tidy_c24_job_discription &lt;- text_df_career24 %&gt;%
                             unnest_tokens(word, text, token = &quot;words&quot;, to_lower = TRUE)
 tidy_c24_job_discription</code></pre>
@@ -172,12 +172,12 @@ tidy_c24_job_discription</code></pre>
 ## 10     1 senior    
 ## # ... with 10,482,882 more rows</code></pre>
 <p>Now that the data is in one-word-per-row format, we can manipulate it with tidy tools like <code>dplyr</code>. Often in text analysis, we will want to remove stop words; stop words are words that are not useful for an analysis, typically extremely common words such as “the”, “of”, “to”, and so forth in English. We can remove stop words (kept in the tidytext dataset <code>stop_words</code>) with an <code>anti_join()</code>.</p>
-<p>Furthermore, after close examination of the job discriptions it was found that every discription ended with the same two sentences (by default): “Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful.” Therefore, these words were also removed for the job discriptions.</p>
+<p>Furthermore, after close examination of the job descriptions it was found that every description ended with the same two sentences (by default): “Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful.” Therefore, these words were also removed for the job descriptions.</p>
 <pre class="r"><code>tidy_c24_job_discription &lt;- tidy_c24_job_discription %&gt;%
                             anti_join(stop_words) %&gt;%
                             filter(!word %in% text_df$word)</code></pre>
 <pre><code>## Joining, by = &quot;word&quot;</code></pre>
-<p>We can now use dplyr’s <code>count()</code> to find the most common words in all the job discriptions as a whole.</p>
+<p>We can now use dplyr’s <code>count()</code> to find the most common words in all the job descriptions as a whole.</p>
 <pre class="r"><code>tidy_c24_count &lt;- tidy_c24_job_discription %&gt;%
   count(word, sort = TRUE) 
 tidy_c24_count</code></pre>
