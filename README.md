@@ -1,2 +1,2 @@
 # career24_text_mining
-Text mining career24 job descriptions with R
+Text Mining and Sentiment Analysis on [Careers24](http://www.careers24.com/) job descriptions with R.
