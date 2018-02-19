@@ -20,6 +20,15 @@ Text mining usually involves the process of structuring the input text. The over
 
 
 
+Before we begin the analysis a close examination of the job descriptions shows that every description ends with the same two sentences (by default): "Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful." One can remove these sentences by using the `gsub` fuction from the `tm` package.
+
+
+```r
+# Get rid of foreign symbols in job discriptions
+careers24.data$job.description  <- gsub("Companies may expire jobs at their own discretion. If you have not received a response within two weeks, your application was most likely unsuccessful.", "", careers24.data$job.description )
+```
+
+
 # The Tidy Text 
 
 The job descriptions on [Careers24](http://www.careers24.com/) are typical character vectors that we might want to analyse. In order to turn it into a tidy text dataset, we first need to put it into a data frame.
@@ -33,16 +42,16 @@ text_df_career24
 ## # A tibble: 57,837 x 2
 ##     line text                                                             
 ##    <int> <chr>                                                            
-##  1     1 Senior Enterprise Architect Leading consulting house looking for~
+##  1     1 "Senior Enterprise Architect Leading consulting house looking fo~
 ##  2     2 A well established firm based in the East Rand is looking for SA~
 ##  3     3 A well established and dynamic firm based in the East Rand is lo~
-##  4     4 C# Developers needed  Centurion  Negotiable between R35k and R50~
-##  5     5 Senior C# needed  JHB  Negotiable between R500k and R720kJOB DES~
+##  4     4 "C# Developers needed  Centurion  Negotiable between R35k and R5~
+##  5     5 "Senior C# needed  JHB  Negotiable between R500k and R720kJOB DE~
 ##  6     6 " To build relationships with clients To give objective professi~
-##  7     7 Would you like to become a Financial Adviser? Join our 2 year tr~
-##  8     8 Guest RelationsTrainingDuty ManagementStaff Management Five star~
+##  7     7 "Would you like to become a Financial Adviser? Join our 2 year t~
+##  8     8 "Guest RelationsTrainingDuty ManagementStaff Management Five sta~
 ##  9     9 Tired of waitressing?Tired of not making enough money and workin~
-## 10    10 five star hotel is seeking a Reservations agentRoom Reservations~
+## 10    10 "five star hotel is seeking a Reservations agentRoom Reservation~
 ## # ... with 57,827 more rows
 ```
 
@@ -52,11 +61,12 @@ However, this data frame isn’t yet compatible with tidy text analysis. We can�
 ```r
 tidy_c24_job_discription <- text_df_career24 %>%
                             unnest_tokens(word, text, token = "words", to_lower = TRUE)
+
 tidy_c24_job_discription
 ```
 
 ```
-## # A tibble: 10,482,892 x 2
+## # A tibble: 9,490,537 x 2
 ##     line word      
 ##    <int> <chr>     
 ##  1     1 senior    
@@ -69,19 +79,18 @@ tidy_c24_job_discription
 ##  8     1 for       
 ##  9     1 a         
 ## 10     1 senior    
-## # ... with 10,482,882 more rows
+## # ... with 9,490,527 more rows
 ```
 
 Now that the data is in one-word-per-row format, we can manipulate it with tidy tools like `dplyr`. Often in text analysis, we will want to remove stop words; stop words are words that are not useful for an analysis, typically extremely common words such as “the”, “of”, “to”, and so forth in English. We can remove stop words (kept in the tidytext dataset `stop_words`) with an `anti_join()`. 
-
-Furthermore, after close examination of the job descriptions it was found that every description ended with the same two sentences (by default): "Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful." Therefore, these words were also removed for the job descriptions.
 
 
 
 ```r
 tidy_c24_job_discription <- tidy_c24_job_discription %>%
                             anti_join(stop_words) %>%
-                            filter(!word %in% text_df$word)
+                            filter(!word %in% text_df$word) %>%
+                            mutate(word = SnowballC::wordStem(word))
 ```
 
 ```
@@ -96,20 +105,20 @@ tidy_c24_count
 ```
 
 ```
-## # A tibble: 185,620 x 2
-##    word             n
-##    <chr>        <int>
-##  1 experience   87274
-##  2 management   41781
-##  3 skills       38945
-##  4 business     31455
-##  5 team         29782
-##  6 sales        29443
-##  7 requirements 25201
-##  8 knowledge    25005
-##  9 required     24420
-## 10 company      24164
-## # ... with 185,610 more rows
+## # A tibble: 166,482 x 2
+##    word        n
+##    <chr>   <int>
+##  1 experi  88138
+##  2 manag   78586
+##  3 requir  55365
+##  4 develop 47719
+##  5 skill   41740
+##  6 client  37713
+##  7 team    33465
+##  8 applic  33065
+##  9 busi    32644
+## 10 posit   31590
+## # ... with 166,472 more rows
 ```
 
 
@@ -123,7 +132,7 @@ ggplot(data=tidy_c24_count[1:10,],aes(x=word,y=n,fill=word))+
   guides(fill=FALSE)+theme(plot.title = element_text(hjust = 0.5))
 ```
 
-![](careers24_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+![](careers24_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
 # Sentiment Analysis on Careers24 Job Discriptions
 
@@ -156,7 +165,7 @@ bing_word_counts %>%
 ## Selecting by n
 ```
 
-![](careers24_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+![](careers24_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
 ```r
 tidy_c24_job_discription %>%
@@ -173,7 +182,7 @@ tidy_c24_job_discription %>%
   ylab("Frequency of this word in Careers24 job discriptions")
 ```
 
-![](careers24_files/figure-html/unnamed-chunk-8-2.png)<!-- -->
+![](careers24_files/figure-html/unnamed-chunk-10-2.png)<!-- -->
 
 
 

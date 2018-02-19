@@ -26,15 +26,24 @@ library(dplyr)
 library(tidytext)
 library(ggplot2)
 library(tidyr)
+library(SnowballC)
+library(tm)
 
 # load data
 careers24.data <- readRDS("careers24_jobs_database.RDS")
-
-# Get rid of foreign symbols in job discriptions
-careers24.data$job.description <- sapply(careers24.data$job.description,function(row) iconv(row, "latin1", "ASCII", sub=""))
-
 ```
 
+Before we begin the analysis a close examination of the job descriptions shows that every description ends with the same two sentences (by default): "Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful." One can remove these sentences by using the `gsub` fuction from the `tm` package.
+
+```{r, include=TRUE}
+# Get rid of foreign symbols in job discriptions
+careers24.data$job.description  <- gsub("Companies may expire jobs at their own discretion. If you have not received a response within two weeks, your application was most likely unsuccessful.", "", careers24.data$job.description )
+```
+
+```{r, include=FALSE}
+careers24.data$job.description <- sapply(careers24.data$job.description,function(row) iconv(row, "latin1", "ASCII", sub=""))
+careers24.data$job.description  <- gsub("If you havent heard from e-Merge IT within 2 weeks of your application, please consider it unsuccessful for this position ", "", careers24.data$job.description )
+```
 # The Tidy Text 
 
 The job descriptions on [Careers24](http://www.careers24.com/) are typical character vectors that we might want to analyse. In order to turn it into a tidy text dataset, we first need to put it into a data frame.
@@ -48,19 +57,16 @@ However, this data frame isn’t yet compatible with tidy text analysis. We can�
 ```{r}
 tidy_c24_job_discription <- text_df_career24 %>%
                             unnest_tokens(word, text, token = "words", to_lower = TRUE)
+
 tidy_c24_job_discription
 ```
 
 Now that the data is in one-word-per-row format, we can manipulate it with tidy tools like `dplyr`. Often in text analysis, we will want to remove stop words; stop words are words that are not useful for an analysis, typically extremely common words such as “the”, “of”, “to”, and so forth in English. We can remove stop words (kept in the tidytext dataset `stop_words`) with an `anti_join()`. 
 
-Furthermore, after close examination of the job descriptions it was found that every description ended with the same two sentences (by default): "Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful." Therefore, these words were also removed for the job descriptions.
-
 ```{r, include=FALSE}
 data(stop_words)
 
-text <- c("Companies may expire jobs at their own discretion.
-          If you have not received a response within two weeks, 
-          your application was most likely unsuccessful xxx xxxx")
+text <- c("xxx xxxx whilst")
 
 text_df <- data_frame(line = 1, text = text)
 
@@ -70,7 +76,8 @@ text_df <- text_df %>%
 ```{r}
 tidy_c24_job_discription <- tidy_c24_job_discription %>%
                             anti_join(stop_words) %>%
-                            filter(!word %in% text_df$word)
+                            filter(!word %in% text_df$word) %>%
+                            mutate(word = SnowballC::wordStem(word))
 ```
 We can now use dplyr’s `count()` to find the most common words in all the job descriptions as a whole.
 ```{r}
