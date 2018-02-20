@@ -130,7 +130,7 @@ tidy_c24_count
 #top 10 words
 ggplot(data=tidy_c24_count[1:10,],aes(x=word,y=n,fill=word))+
   geom_bar(colour="black",stat="identity")+
-  xlab("Common words")+ylab("N count")+ggtitle("Careers24 Top 10 words in Job Discriptions")+
+  xlab("Common words")+ylab("N count")+ggtitle("Top 10 words (stems) in Careers24 Job Discriptions")+
   guides(fill=FALSE)+theme(plot.title = element_text(hjust = 0.5))
 ```
 
