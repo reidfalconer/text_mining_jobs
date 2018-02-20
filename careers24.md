@@ -102,7 +102,8 @@ We can now use dplyr’s `count()` to find the most common words in all the job 
 
 ```r
 tidy_c24_count <- tidy_c24_job_discription %>%
-  count(word, sort = TRUE) 
+                  count(word, sort = TRUE) 
+
 tidy_c24_count
 ```
 
@@ -128,10 +129,13 @@ tidy_c24_count
 
 ```r
 #top 10 words
-ggplot(data=tidy_c24_count[1:10,],aes(x=word,y=n,fill=word))+
-  geom_bar(colour="black",stat="identity")+
-  xlab("Common words")+ylab("N count")+ggtitle("Careers24 Top 10 words in Job Discriptions")+
-  guides(fill=FALSE)+theme(plot.title = element_text(hjust = 0.5))
+ggplot(data=tidy_c24_count[1:10,],aes(x=word,y=n,fill=word)) +
+      geom_bar(colour="black",stat="identity") +
+      xlab("Common words") +
+      ylab("N count") +
+      ggtitle("Top 10 words (stems) in Careers24 Job Discriptions") +
+      guides(fill=FALSE) +
+      theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ![](careers24_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
