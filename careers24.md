@@ -129,6 +129,7 @@ tidy_c24_count
 
 ```r
 #top 10 words
+<<<<<<< HEAD
 ggplot(data=tidy_c24_count[1:10,],aes(x=word,y=n,fill=word)) +
       geom_bar(colour="black",stat="identity") +
       xlab("Common words") +
@@ -136,6 +137,12 @@ ggplot(data=tidy_c24_count[1:10,],aes(x=word,y=n,fill=word)) +
       ggtitle("Top 10 words (stems) in Careers24 Job Discriptions") +
       guides(fill=FALSE) +
       theme(plot.title = element_text(hjust = 0.5))
+=======
+ggplot(data=tidy_c24_count[1:10,],aes(x=word,y=n,fill=word))+
+  geom_bar(colour="black",stat="identity")+
+  xlab("Common words")+ylab("N count")+ggtitle("Top 10 words (stems) in Careers24 Job Discriptions")+
+  guides(fill=FALSE)+theme(plot.title = element_text(hjust = 0.5))
+>>>>>>> 4d8e8a0d51a73a81ecc828d32be882117670ee8b
 ```
 
 ![](careers24_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
