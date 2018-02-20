@@ -133,9 +133,11 @@ text-align: justify}
 <h1>Introduction</h1>
 <p>This article serves as a basic introduction to text mining in R using the <code>tidytext</code> package. Specifically it looks as text mining job descriptions on <a href="http://www.careers24.com/">Careers24</a>, one of the leading job portals in South Africa.</p>
 <p>Text mining usually involves the process of structuring the input text. The overarching goal is, essentially, to turn text into data for analysis, via application of natural language processing (NLP) and analytical methods.</p>
-<p>Before we begin the analysis a close examination of the job descriptions shows that every description ends with the same two sentences (by default): “Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful.” One can remove these sentences by using the <code>gsub</code> fuction from the <code>tm</code> package.</p>
-<pre class="r"><code># Get rid of foreign symbols in job discriptions
-careers24.data$job.description  &lt;- gsub(&quot;Companies may expire jobs at their own discretion. If you have not received a response within two weeks, your application was most likely unsuccessful.&quot;, &quot;&quot;, careers24.data$job.description )</code></pre>
+<p>Before we begin the analysis, a close examination of the job descriptions shows that every description ends with the same two sentences (by default): “Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful.” One can remove these sentences by using the <code>gsub()</code> function from the <code>tm</code> package and one can get rid of any foreign symbols in job descriptions by using the <code>inconv()</code> function.</p>
+<pre class="r"><code># Get rid of default sentences
+careers24.data$job.description  &lt;- gsub(&quot;Companies may expire jobs at their own discretion. If you have not received a response within two weeks, your application was most likely unsuccessful.&quot;, &quot;&quot;, careers24.data$job.description )
+# Get rid of foreign symbols in job discriptions
+careers24.data$job.description &lt;- sapply(careers24.data$job.description,function(row) iconv(row, &quot;latin1&quot;, &quot;ASCII&quot;, sub=&quot;&quot;))</code></pre>
 </div>
 <div id="the-tidy-text" class="section level1">
 <h1>The Tidy Text</h1>
@@ -175,7 +177,7 @@ tidy_c24_job_discription</code></pre>
 ##  9     1 a         
 ## 10     1 senior    
 ## # ... with 9,490,527 more rows</code></pre>
-<p>Now that the data is in one-word-per-row format, we can manipulate it with tidy tools like <code>dplyr</code>. Often in text analysis, we will want to remove stop words; stop words are words that are not useful for an analysis, typically extremely common words such as “the”, “of”, “to”, and so forth in English. We can remove stop words (kept in the tidytext dataset <code>stop_words</code>) with an <code>anti_join()</code>.</p>
+<p>Now that the data is in one-word-per-row format, we can manipulate it with tidy tools like <code>dplyr</code>. Often in text analysis, we will want to remove stop words; stop words are words that are not useful for an analysis, typically extremely common words such as “the”, “of”, “to”, and so forth in English. We can remove stop words (kept in the tidytext dataset <code>stop_words</code>) with an <code>anti_join()</code>. Additionally, another useful preprocessing step involves word stemming and stem completion. The <code>SnowballC</code> package provides the <code>wordStem()</code> function to get to a word’s root.</p>
 <pre class="r"><code>tidy_c24_job_discription &lt;- tidy_c24_job_discription %&gt;%
                             anti_join(stop_words) %&gt;%
                             filter(!word %in% text_df$word) %&gt;%

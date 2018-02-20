@@ -20,12 +20,14 @@ Text mining usually involves the process of structuring the input text. The over
 
 
 
-Before we begin the analysis a close examination of the job descriptions shows that every description ends with the same two sentences (by default): "Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful." One can remove these sentences by using the `gsub` fuction from the `tm` package.
+Before we begin the analysis, a close examination of the job descriptions shows that every description ends with the same two sentences (by default): "Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful." One can remove these sentences by using the `gsub()` function from the `tm` package and one can get rid of any foreign symbols in job descriptions by using the `inconv()` function.  
 
 
 ```r
-# Get rid of foreign symbols in job discriptions
+# Get rid of default sentences
 careers24.data$job.description  <- gsub("Companies may expire jobs at their own discretion. If you have not received a response within two weeks, your application was most likely unsuccessful.", "", careers24.data$job.description )
+# Get rid of foreign symbols in job discriptions
+careers24.data$job.description <- sapply(careers24.data$job.description,function(row) iconv(row, "latin1", "ASCII", sub=""))
 ```
 
 
@@ -82,7 +84,7 @@ tidy_c24_job_discription
 ## # ... with 9,490,527 more rows
 ```
 
-Now that the data is in one-word-per-row format, we can manipulate it with tidy tools like `dplyr`. Often in text analysis, we will want to remove stop words; stop words are words that are not useful for an analysis, typically extremely common words such as “the”, “of”, “to”, and so forth in English. We can remove stop words (kept in the tidytext dataset `stop_words`) with an `anti_join()`. 
+Now that the data is in one-word-per-row format, we can manipulate it with tidy tools like `dplyr`. Often in text analysis, we will want to remove stop words; stop words are words that are not useful for an analysis, typically extremely common words such as “the”, “of”, “to”, and so forth in English. We can remove stop words (kept in the tidytext dataset `stop_words`) with an `anti_join()`. Additionally, another useful preprocessing step involves word stemming and stem completion. The `SnowballC` package provides the `wordStem()` function to get to a word’s root.
 
 
 
