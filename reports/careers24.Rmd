@@ -25,7 +25,7 @@ library(SnowballC)
 library(tm)
 
 # load data
-careers24.data <- readRDS("careers24_jobs_database.RDS")
+careers24.data <- readRDS("../data/careers24_jobs_database.RDS")
 ```
 
 Before we begin the analysis, a close examination of the job descriptions shows that every description ends with the same two sentences (by default): "Companies may expire jobs at their own discretion. If you have not received a response within two weeks your application was most likely unsuccessful." One can remove these sentences by using the `gsub()` function from the `tm` package and one can get rid of any foreign symbols in job descriptions by using the `inconv()` function.  
