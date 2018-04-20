@@ -7,11 +7,6 @@ output:
     keep_md: yes
 ---
 
-<style>
-body {
-text-align: justify}
-</style>
-
 # Introduction
 
 This article serves as a basic introduction to text mining in R using the `tidytext` package. Specifically it looks as text mining job descriptions on [Careers24](http://www.careers24.com/), one of the leading job portals in South Africa.
